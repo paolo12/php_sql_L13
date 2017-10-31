@@ -11,7 +11,12 @@ function getValue($vl){
 		return '';
 	}
 	else{
-		return strip_tags($_GET[strval($vl)]);
+		switch ($vl) {
+			case 'isbn': return $_GET['isbn']; break;
+			case 'name': return $_GET["name"]; break;
+			case 'author': return $_GET["author"]; break;
+			default: return ''; break;
+		}		
 	}
 }
 ?>
@@ -40,9 +45,9 @@ function getValue($vl){
 <body>
 <h2>Список книг</h2>
 <form method="GET">
-    <input type="text" name="isbn" placeholder="ISBN" value="<?php echo getValue('isbn');?>"/>
-    <input type="text" name="name" placeholder="Название книги" value="<?php echo getValue('name');?>"/>
-    <input type="text" name="author" placeholder="Автор книги" value="<?php echo getValue('author'); ?>"/>
+	<input type="text" name="isbn" placeholder=“ISBN” value="<?= getValue('isbn')?>"/>    
+    <input type="text" name="name" placeholder="Название книги" value="<?= getValue('name')?>"/>
+    <input type="text" name="author" placeholder="Автор книги" value="<?= getValue('author')?>"/>
     <input type="submit" value="Поиск" />
 </form>
 </br>
@@ -61,17 +66,17 @@ if(empty($_GET)){
 	}
 }
 else if(!empty($_GET['isbn'])){
-	foreach ($pdo->query('SELECT name, author, year, isbn, genre FROM books WHERE isbn='.'"'.$_GET['isbn'].'"') as $row) {
+	foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.$_GET['isbn'].'%"') as $row) {
 		echo getTable($row);
 	}
 }
 else if(!empty($_GET['name'])){
-	foreach ($pdo->query('SELECT name, author, year, isbn, genre FROM books WHERE name='.'"'.$_GET['name'].'"') as $row) {
+	foreach ($pdo->query('SELECT * FROM books WHERE name LIKE '.'"%'.$_GET['name'].'%"') as $row) {
 		echo getTable($row);
 	}
 }
 else if(!empty($_GET['author'])){
-	foreach ($pdo->query('SELECT name, author, year, isbn, genre FROM books WHERE author='.'"'.$_GET['author'].'"') as $row) {
+	foreach ($pdo->query('SELECT * FROM books WHERE author LIKE '.'"%'.$_GET['author'].'%"') as $row) {
 		echo getTable($row);
 	}
 }
