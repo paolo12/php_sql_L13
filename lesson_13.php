@@ -7,14 +7,14 @@ function getTable($row){
 }
 
 function getValue($vl){
-	if(empty($_GET) or empty($_GET[strval($vl)])){
+	if(empty($_GET) or empty($_GET[strip_tags($vl)])){
 		return '';
 	}
 	else{
 		switch ($vl) {
-			case 'isbn': return $_GET['isbn']; break;
-			case 'name': return $_GET["name"]; break;
-			case 'author': return $_GET["author"]; break;
+			case 'isbn': return strip_tags($_GET['isbn']); break;
+			case 'name': return strip_tags($_GET['name']); break;
+			case 'author': return strip_tags($_GET['author']); break;
 			default: return ''; break;
 		}		
 	}
@@ -60,29 +60,48 @@ function getValue($vl){
         <th>ISBN</th>
     </tr>
 <?php
-if(empty($_GET)){
+if(empty($_GET) or empty(strip_tags($_GET['isbn'])) and empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
 	foreach ($pdo->query($sql) as $row) {
 		echo getTable($row);
 	}
 }
-else if(!empty($_GET['isbn'])){
-	foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.$_GET['isbn'].'%"') as $row) {
-		echo getTable($row);
-	}
+else if(empty(strip_tags($_GET['isbn']))){
+		if(empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
+			foreach ($pdo->query('SELECT * FROM books WHERE author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+				echo getTable($row);
+			}
+		}
+		else if(!empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
+			foreach ($pdo->query('SELECT * FROM books WHERE name LIKE '.'"%'.strip_tags($_GET['name']).'%"') as $row) {
+				echo getTable($row);
+			}
+		}
+		else if(!empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
+			foreach ($pdo->query('SELECT * FROM books WHERE name LIKE '.'"%'.strip_tags($_GET['name']).'%" AND author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+				echo getTable($row);
+			}
+		}
 }
-else if(!empty($_GET['name'])){
-	foreach ($pdo->query('SELECT * FROM books WHERE name LIKE '.'"%'.$_GET['name'].'%"') as $row) {
-		echo getTable($row);
+else if(!empty(strip_tags($_GET['isbn']))){
+	if(empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
+		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%"') as $row) {
+			echo getTable($row);
+		}
 	}
-}
-else if(!empty($_GET['author'])){
-	foreach ($pdo->query('SELECT * FROM books WHERE author LIKE '.'"%'.$_GET['author'].'%"') as $row) {
-		echo getTable($row);
+	else if(!empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
+		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%" AND name LIKE '.'"%'.strip_tags($_GET['name']).'%"') as $row) {
+			echo getTable($row);
+		}
 	}
-}
-else{
-	foreach ($pdo->query($sql) as $row) {
-		echo getTable($row);
+	else if(empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
+		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%" AND author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+			echo getTable($row);
+		}
+	}
+	else if(!empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
+		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%" AND name LIKE '.'"%'.strip_tags($_GET['name']).'%" AND author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+			echo getTable($row);
+		}
 	}
 }
 ?> 
