@@ -1,6 +1,5 @@
 <?php
 $pdo = new PDO('mysql:host=localhost;dbname=global;charset=UTF8', 'root', 'qwerty');
-$sql = 'SELECT name, author, year, isbn, genre FROM books';
 
 function getTable($row){
 	return '<tr>'.'<td>'.$row['name'].'</td>'.'<td id="center">'.$row['author'].'</td>'.'<td id="center">'.$row['year'].'</td>'.'<td>'.$row['genre'].'</td>'.'<td id="center">'.$row['isbn'].'</td>'.'</tr>';
@@ -11,12 +10,12 @@ function getValue($vl){
 		return '';
 	}
 	else{
-		switch ($vl) {
-			case 'isbn': return strip_tags($_GET['isbn']); break;
-			case 'name': return strip_tags($_GET['name']); break;
-			case 'author': return strip_tags($_GET['author']); break;
+		switch (strip_tags($vl)) {
+			case 'isbn': return $_GET['isbn']; break;
+			case 'name': return $_GET['name']; break;
+			case 'author': return $_GET['author']; break;
 			default: return ''; break;
-		}		
+		}
 	}
 }
 ?>
@@ -60,46 +59,99 @@ function getValue($vl){
         <th>ISBN</th>
     </tr>
 <?php
-if(empty($_GET) or empty(strip_tags($_GET['isbn'])) and empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
-	foreach ($pdo->query($sql) as $row) {
+if(empty($_GET) or (empty($_GET['isbn']) and empty($_GET['name']) and empty($_GET['author']))){
+	$sql = 'SELECT * FROM books';
+	$stmt = $pdo->prepare($sql);
+	$stmt->error_list;
+	$stmt->execute();
+	$result = $stmt->fetchAll();
+	
+	foreach ($result as $row) {
 		echo getTable($row);
 	}
 }
-else if(empty(strip_tags($_GET['isbn']))){
-		if(empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
-			foreach ($pdo->query('SELECT * FROM books WHERE author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+else if(empty($_GET['isbn'])){
+		if(empty($_GET['name']) and !empty($_GET['author'])){
+			$sql = 'SELECT * FROM books WHERE author LIKE concat("%", :get_author, "%")';
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':get_author', $_GET['author'], PDO::PARAM_STR);
+			$stmt->execute();
+			$result = $stmt->fetchAll();
+			
+			foreach ($result as $row) {
 				echo getTable($row);
 			}
 		}
-		else if(!empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
-			foreach ($pdo->query('SELECT * FROM books WHERE name LIKE '.'"%'.strip_tags($_GET['name']).'%"') as $row) {
+		else if(!empty($_GET['name']) and empty($_GET['author'])){
+			$sql = 'SELECT * FROM books WHERE name LIKE concat("%", :get_name, "%")';
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':get_name', $_GET['name'], PDO::PARAM_STR);
+			$stmt->execute();
+			$result = $stmt->fetchAll();
+			
+			foreach ($result as $row) {
 				echo getTable($row);
 			}
 		}
-		else if(!empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
-			foreach ($pdo->query('SELECT * FROM books WHERE name LIKE '.'"%'.strip_tags($_GET['name']).'%" AND author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+		else if(!empty($_GET['name']) and !empty($_GET['author'])){
+			$sql = 'SELECT * FROM books WHERE name LIKE concat("%", :get_name, "%") AND author LIKE concat("%", :get_author, "%")';
+			$stmt = $pdo->prepare($sql);
+			$stmt->bindParam(':get_name', $_GET['name'], PDO::PARAM_STR);
+			$stmt->bindParam(':get_author', $_GET['author'], PDO::PARAM_STR);
+			$stmt->execute();
+			$result = $stmt->fetchAll();
+			
+			foreach ($result as $row) {
 				echo getTable($row);
 			}
 		}
 }
-else if(!empty(strip_tags($_GET['isbn']))){
-	if(empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
-		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%"') as $row) {
+else if(!empty($_GET['isbn'])){
+	if(empty($_GET['name']) and empty($_GET['author'])){
+		$sql = 'SELECT * FROM books WHERE isbn LIKE concat("%", :get_isbn, "%")';
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':get_isbn', $_GET['isbn'], PDO::PARAM_STR);
+		$stmt->execute();
+		$result = $stmt->fetchAll();
+		
+		foreach ($result as $row) {
 			echo getTable($row);
 		}
 	}
-	else if(!empty(strip_tags($_GET['name'])) and empty(strip_tags($_GET['author']))){
-		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%" AND name LIKE '.'"%'.strip_tags($_GET['name']).'%"') as $row) {
+	else if(!empty($_GET['name']) and empty($_GET['author'])){
+		$sql = 'SELECT * FROM books WHERE isbn LIKE concat("%", :get_isbn, "%") AND name LIKE concat("%", :get_name, "%")';
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':get_isbn', $_GET['isbn'], PDO::PARAM_STR);
+		$stmt->bindParam(':get_name', $_GET['name'], PDO::PARAM_STR);
+		$stmt->execute();
+		$result = $stmt->fetchAll();
+		
+		foreach ($result as $row) {
 			echo getTable($row);
 		}
 	}
-	else if(empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
-		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%" AND author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+	else if(empty($_GET['name']) and !empty($_GET['author'])){
+		$sql = 'SELECT * FROM books WHERE isbn LIKE concat("%", :get_isbn, "%") AND author LIKE concat("%", :get_author, "%")';
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':get_isbn', $_GET['isbn'], PDO::PARAM_STR);
+		$stmt->bindParam(':get_author', $_GET['author'], PDO::PARAM_STR);
+		$stmt->execute();
+		$result = $stmt->fetchAll();
+		
+		foreach ($result as $row) {
 			echo getTable($row);
 		}
 	}
-	else if(!empty(strip_tags($_GET['name'])) and !empty(strip_tags($_GET['author']))){
-		foreach ($pdo->query('SELECT * FROM books WHERE isbn LIKE '.'"%'.strip_tags($_GET['isbn']).'%" AND name LIKE '.'"%'.strip_tags($_GET['name']).'%" AND author LIKE '.'"%'.strip_tags($_GET['author']).'%"') as $row) {
+	else if(!empty($_GET['name']) and !empty($_GET['author'])){
+		$sql = 'SELECT * FROM books WHERE isbn LIKE concat("%", :get_isbn, "%") AND name LIKE concat("%", :get_name, "%") AND author LIKE concat("%", :get_author, "%")';
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindParam(':get_isbn', $_GET['isbn'], PDO::PARAM_STR);
+		$stmt->bindParam(':get_name', $_GET['name'], PDO::PARAM_STR);
+		$stmt->bindParam(':get_author', $_GET['author'], PDO::PARAM_STR);
+		$stmt->execute();
+		$result = $stmt->fetchAll();
+		
+		foreach ($result as $row) {
 			echo getTable($row);
 		}
 	}
