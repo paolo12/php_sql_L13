@@ -4,20 +4,6 @@ $pdo = new PDO('mysql:host=localhost;dbname=global;charset=UTF8', 'root', 'qwert
 function getTable($row){
 	return '<tr>'.'<td>'.$row['name'].'</td>'.'<td id="center">'.$row['author'].'</td>'.'<td id="center">'.$row['year'].'</td>'.'<td>'.$row['genre'].'</td>'.'<td id="center">'.$row['isbn'].'</td>'.'</tr>';
 }
-
-function getValue($vl){
-	if(empty($_GET) or empty($_GET[strip_tags($vl)])){
-		return '';
-	}
-	else{
-		switch (strip_tags($vl)) {
-			case 'isbn': return $_GET['isbn']; break;
-			case 'name': return $_GET['name']; break;
-			case 'author': return $_GET['author']; break;
-			default: return ''; break;
-		}
-	}
-}
 ?>
 <html> 
 <head>
@@ -44,9 +30,9 @@ function getValue($vl){
 <body>
 <h2>Список книг</h2>
 <form method="GET">
-	<input type="text" name="isbn" placeholder=“ISBN” value="<?= getValue('isbn')?>"/>    
-    <input type="text" name="name" placeholder="Название книги" value="<?= getValue('name')?>"/>
-    <input type="text" name="author" placeholder="Автор книги" value="<?= getValue('author')?>"/>
+	<input type="text" name="isbn" placeholder=“ISBN” value="<?php echo (empty($_GET['isbn']) ? '' : $_GET['isbn'])?>"/>    
+    <input type="text" name="name" placeholder="Название книги" value="<?php echo (empty($_GET['name']) ? '' : $_GET['name'])?>"/>
+    <input type="text" name="author" placeholder="Автор книги" value="<?php echo (empty($_GET['author']) ? '' : $_GET['author'])?>"/>
     <input type="submit" value="Поиск" />
 </form>
 </br>
@@ -62,7 +48,6 @@ function getValue($vl){
 if(empty($_GET) or (empty($_GET['isbn']) and empty($_GET['name']) and empty($_GET['author']))){
 	$sql = 'SELECT * FROM books';
 	$stmt = $pdo->prepare($sql);
-	$stmt->error_list;
 	$stmt->execute();
 	$result = $stmt->fetchAll();
 	
